@@ -56,4 +56,4 @@ ROUGE/BLEU は実験コード内の簡易実装で計算した同じ50件の相�
 
 このリポジトリには集計CSVと50件の生成比較を収録する。生成比較に含まれる評価データの質問・参照回答は [Dietmar2020/ifc-bim-gemma3-subset-1k](https://huggingface.co/datasets/Dietmar2020/ifc-bim-gemma3-subset-1k)（MIT）由来。学習データは [Dietmar2020/ifc-bim-high-quality-alpaca](https://huggingface.co/datasets/Dietmar2020/ifc-bim-high-quality-alpaca)（Apache 2.0）。ベースモデルの利用条件は [Gemma 3 1B IT](https://huggingface.co/google/gemma-3-1b-it) を参照。モデル重みや学習データ全文は配布せず、元の提供元から取得する。
 
-結果CSVは保存出力から確認した。学習スクリプトの冒頭説明には評価1,000件の記述があるが、今回の保存結果は900件。評価件数は保存結果の `gemma_eval_rows=900` を採用した。
+結果CSVは保存出力から確認した。評価データセット名には 1k とあるが、今回の保存結果は900件。評価件数は保存結果の `gemma_eval_rows=900` を採用した。
