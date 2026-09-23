@@ -1,5 +1,6 @@
 # IFC/BIM question answering with Gemma 3 1B and LoRA
 
+An experiment adapting Gemma 3 1B for IFC/BIM question answering with LoRA. This repository records the training and evaluation workflow, data deduplication checks, generated examples, and known failure cases; the reported metrics do not establish factual correctness.
 Gemma 3 1B IT に IFC/BIM の質問応答を追加学習し、重複除去後の評価で何が改善し、何が残ったかを記録した実験です。Kaggle 向けの学習コード、集計結果、50問の生成比較を公開しています。
 
 > **結果の要約:** 別形式の評価データ900件の回答部分の loss は **5.0349 → 1.4989**。生成50問の単語一致指標も改善しました。一方で、WHERE ルールや属性の取り違え、反復、一般的な質問への誤答があり、IFC 仕様の正確性を保証するものではありません。
