@@ -52,8 +52,8 @@ flowchart LR
 ## 再現方法
 
 1. Kaggle Notebook の GPU accelerator を有効にします。元の実験は NVIDIA RTX PRO 6000 で実施しました。
-2. 利用条件を確認して、[Gemma 3 1B IT](https://huggingface.co/google/gemma-3-1b-it)、[Alpaca 学習データ](https://huggingface.co/datasets/Dietmar2020/ifc-bim-high-quality-alpaca)、[Gemma 評価データ](https://huggingface.co/datasets/Dietmar2020/ifc-bim-gemma3-subset-1k) を Hugging Face Datasets の保存形式で `/kaggle/input` 以下に配置します。スクリプトはディレクトリ名に含まれる識別子で探索します。
-3. Python環境に `numpy`, `torch`, `pandas`, `matplotlib`, `datasets`, `transformers`, `peft` を用意します。`wandb` は任意です。元実験の厳密なパッケージバージョンは記録されていないため、ここでは再現可能なlockfileや互換性を保証しません。
+2. 利用条件を確認して、[Gemma 3 1B IT](https://huggingface.co/google/gemma-3-1b-it)、[Alpaca 学習データ](https://huggingface.co/datasets/Dietmar2020/ifc-bim-high-quality-alpaca)、[Gemma 評価データ](https://huggingface.co/datasets/Dietmar2020/ifc-bim-gemma3-subset-1k) を `/kaggle/input` 以下に配置します。モデルは `config.json`・重み・tokenizerが入るフォルダ、データは `datasets.save_to_disk` 形式の `dataset_dict.json` または `state.json` が入るフォルダにします。スクリプトはディレクトリ名の `gemma-3-1b-it`、`ifc-bim-high-quality-alpaca`、`ifc-bim-gemma3-subset-1k` を手掛かりに再帰探索します。例えば `/kaggle/input/<asset-name>/<saved-model-or-dataset>/` の配置です。
+3. Python環境に `numpy`, `torch`, `pandas`, `matplotlib`, `datasets`, `transformers`, `peft` を用意します。`wandb` は任意です。元実験のPython versionと厳密なパッケージバージョンは記録されていないため、ここではlockfileや完全再現を保証しません。Kaggle GPU・bfloat16が必要で、元実行のGPU最大予約メモリは約18.44 GBでした（別環境の必要量ではありません）。
 4. [`notebooks/retrain_gemma3_lora.py`](notebooks/retrain_gemma3_lora.py) の冒頭にある `WORK_ROOT` と `/kaggle/input` 探索、出力先、GPU精度設定を確認してから、Kaggleの使い捨て環境で実行します。スクリプトはデータセットを `load_from_disk` で読み込みます。元のKaggle環境に合わせた実験用コードで、一般的なワンコマンド実行を保証しません。
 
 この公開リポジトリの更新作業では GPU 再学習を実行していません。結果は保存済み出力のCSVと生成例に基づきます。スクリプトは `/kaggle/working` 内の同名ディレクトリを作り直すので、使い捨ての実行環境で実行してください。
