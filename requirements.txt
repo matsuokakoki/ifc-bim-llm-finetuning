@@ -1,0 +1,10 @@
+# Direct imports used by the training/evaluation script.
+# Versions are intentionally unpinned: the original run did not record them.
+# Install a PyTorch build matching the target CUDA runtime separately.
+accelerate
+datasets
+matplotlib
+numpy
+pandas
+peft
+transformers
