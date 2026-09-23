@@ -1,28 +1,49 @@
-# IFC/BIM Gemma 3 1B LoRA 再実験
+# IFC/BIM question answering with Gemma 3 1B and LoRA
 
-IFC/BIM の質問応答データで Gemma 3 1B Instruct を通常の LoRA で追加学習するための実験コードです。学習時は system/user 部分を loss 対象外にし、assistant の回答部分を学習します。また、Gemma 評価セットの質問と重なる Alpaca 学習データを除外する処理を含みます。
+Gemma 3 1B IT に IFC/BIM の質問応答を追加学習し、重複除去後の評価で何が改善し、何が残ったかを記録した実験です。Kaggle 向けの学習コード、集計結果、50問の生成比較を公開しています。
 
-## コード
+> **結果の要約:** 別形式の評価データ900件の回答部分の loss は **5.0349 → 1.4989**。生成50問の単語一致指標も改善しました。一方で、WHERE ルールや属性の取り違え、反復、一般的な質問への誤答があり、IFC 仕様の正確性を保証するものではありません。
 
-- [`notebooks/retrain_gemma3_lora.py`](notebooks/retrain_gemma3_lora.py) — Kaggle GPU 環境向けの再実験スクリプト
-- LoRA rank 16、batch size 4、2 epochs の1条件を実行する設定です。HPO は行いません。
+詳細な背景と図解は [Zenn 記事「LLMはIFCを理解できるのか？」](https://zenn.dev/onestruction/articles/70daae53d48f02) を参照してください。
 
-## 実行環境と入力
+## 結果
 
-Kaggle Notebook で GPU accelerator を有効にし、`/kaggle/input` 以下に次のモデルと Hugging Face Datasets の保存形式のデータセットを追加してください。スクリプトはディレクトリ名の一部から入力を探索します。
+| 指標 | 学習前 | 学習後 | 対象 |
+| --- | ---: | ---: | --- |
+| 回答部分の loss | 5.0349 | 1.4989 | 別形式の評価900件 |
+| ROUGE-1（簡易実装） | 0.1370 | 0.2040 | 生成50件 |
+| ROUGE-L（簡易実装） | 0.0973 | 0.1636 | 生成50件 |
+| BLEU（簡易実装） | 0.0174 | 0.0502 | 生成50件 |
 
-- Gemma 3 1B Instruct（`gemma-3-1b-it` を含むモデルディレクトリ）
-- IFC/BIM Alpaca 学習セット（`ifc-bim-high-quality-alpaca` を含むディレクトリ）
-- IFC/BIM Gemma 評価セット（`ifc-bim-gemma3-subset-1k` を含むディレクトリ）
+同じデータセット由来の Validation 8,405件では loss が 3.9157 → 0.0662 でした。こちらはデータの表現形式への適応も強く反映するため、上の別形式評価と分けて示しています。数値の出典と評価上の注意は [実験レポート](reports/experiment_log.md) にまとめました。
 
-モデルとデータセットはこのリポジトリに含めていません。配布元の利用条件、Gemma の利用規約、Kaggle への追加方法を確認してください。実験コードは Kaggle のローカル GPU 環境で動かす想定で、実行・再現確認はこの追加時点では行っていません。
+## 評価データの重複を除去
 
-## 出力とデータ取り扱い
+学習元42,680件のうち、評価データの質問と正規化後に完全一致する**学習側の行657件**を、分割前に除外しました。657件は回答も一致していました。残り42,023件を学習33,618件と Validation 8,405件に分割し、評価900件はそのまま保持しています。除外後、学習・Validation と評価の正規化完全一致は0件です。657は評価側の一致行数ではないため、「評価900件の73%が重複」とは表現しません。言い換え・意味的な近似重複は検査していません。
 
-スクリプトは学習済み LoRA adapter、評価サマリー、生成例、曲線、データ重複検査レポートなどを `/kaggle/working` 以下に保存し、最後に ZIP 化します。出力には評価セットの質問・参照回答や生成結果が含まれる場合があります。データセットのライセンスと内容を確認するまで、出力物を公開・再配布しないでください。
+## リポジトリの内容
 
-入力データは作業用ディレクトリへコピーされます。既存の `/kaggle/working` 内の同名作業ディレクトリ／パッケージディレクトリはスクリプトが削除して作り直すため、Kaggle の使い捨て作業環境で実行してください。Weights & Biases はオフラインモードです。
+| ファイル | 内容 |
+| --- | --- |
+| [`notebooks/retrain_gemma3_lora.py`](notebooks/retrain_gemma3_lora.py) | Kaggle GPU 向け学習・評価スクリプト |
+| [`reports/experiment_log.md`](reports/experiment_log.md) | 実験設定、結果、生成例の読み方、制約 |
+| [`results/metrics.csv`](results/metrics.csv) | 集計指標の機械可読な抜粋 |
+| [`results/data_contamination_report.csv`](results/data_contamination_report.csv) | 重複確認の原本集計 |
+| [`results/token_length_coverage.csv`](results/token_length_coverage.csv) | 最大トークン長ごとのカバー率 |
+| [`results/before_after_generation_gemma_subset.csv`](results/before_after_generation_gemma_subset.csv) | 50問の質問・参照回答・学習前後の生成回答 |
 
-## 結果について
+公開するCSVには評価データ由来の質問と参照回答を含みます。出典は [Dietmar2020/ifc-bim-gemma3-subset-1k](https://huggingface.co/datasets/Dietmar2020/ifc-bim-gemma3-subset-1k)（MIT）です。学習データの全文、チェックポイント、W&B ログ、LoRA adapter 本体はこのリポジトリには含めません。数値CSVは元の出力からローカル実行パスを省いた抜粋です。
 
-このリポジトリには、再実験結果や実行済みの成功報告を含めていません。数値を報告する場合は、実際の実行ログ・生成物と評価条件を照合してください。
+## 再現方法
+
+1. Kaggle Notebook の GPU accelerator を有効にします。元の実験は NVIDIA RTX PRO 6000 で実施しました。
+2. 利用条件を確認して、[Gemma 3 1B IT](https://huggingface.co/google/gemma-3-1b-it)、[Alpaca 学習データ](https://huggingface.co/datasets/Dietmar2020/ifc-bim-high-quality-alpaca)、[Gemma 評価データ](https://huggingface.co/datasets/Dietmar2020/ifc-bim-gemma3-subset-1k) を Hugging Face Datasets の保存形式で `/kaggle/input` 以下に配置します。スクリプトはディレクトリ名に含まれる識別子で探索します。
+3. `notebooks/retrain_gemma3_lora.py` を Kaggle で実行します。依存する Python パッケージはスクリプトの import を参照してください。現状のコードは元の Kaggle 環境に合わせた実験用で、一般的なワンコマンド実行を保証していません。
+
+この公開リポジトリの更新作業では GPU 再学習を実行していません。結果は保存済み出力のCSVと生成例に基づきます。スクリプトは `/kaggle/working` 内の同名ディレクトリを作り直すので、使い捨ての実行環境で実行してください。
+
+## 実験設定
+
+Gemma 3 1B IT に通常の LoRA（量子化なし）を適用し、回答部分だけを loss 対象として2 epoch 学習しました。LoRA rank 16、alpha 32、dropout 0.05、batch size 4、learning rate 1e-4、bfloat16、max length 1536。Attention と MLP の投影層7種を対象としています。詳しくは [実験レポート](reports/experiment_log.md) を参照してください。
+
+この実験の結論は、**同一ドメインの別形式データへの適応は確認できたが、内容の正確性は別途検証が必要**、というものです。
