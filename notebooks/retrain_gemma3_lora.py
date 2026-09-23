@@ -7,7 +7,7 @@ IFC/BIM向け Gemma 3 1B LoRA 再実験コード
 - system/user prompt部分にはlossをかけず、assistant output部分のみ学習する
 - 前回、ハイパーパラメータで実行し、最良だった LoRA rank=16 / batch size=4 / 2 epoch の1条件だけを今回実行する
 - Gemma評価データと重複する質問をAlpaca学習データ側から除去して再学習する
-- Gemma評価データは1,000件のまま変更せずに学習前後を評価する
+- Gemma評価データは変更せずに学習前後を評価する（保存結果では900件）
 - ROUGE-1 / ROUGE-L / BLEU、生成回答、学習曲線、LoRA adapterを保存する
 - 質問単位で学習データ汚染を検査・除去し、レポートを保存する
 - セッション終了前に成果物をZIPへまとめ、画面にも生成例を出力する

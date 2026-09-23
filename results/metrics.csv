@@ -1,0 +1,6 @@
+metric,split,n,base,finetuned,implementation
+output_only_loss,validation,8405,3.9157323837280273,0.06621048599481583,transformers_eval
+output_only_loss,gemma_eval,900,5.034902572631836,1.4988785982131958,transformers_eval
+rouge1,generation_subset,50,0.13697451846453843,0.2039511473582778,custom_simple
+rougeL,generation_subset,50,0.09727935703632219,0.16361495882732857,custom_simple
+bleu,generation_subset,50,0.017379715902551832,0.05018248597860862,custom_simple
