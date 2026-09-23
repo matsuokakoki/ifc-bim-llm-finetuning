@@ -6,6 +6,21 @@ Gemma 3 1B IT に IFC/BIM の質問応答を追加学習し、重複除去後の
 
 詳細な背景と図解は [Zenn 記事「LLMはIFCを理解できるのか？」](https://zenn.dev/onestruction/articles/70daae53d48f02) を参照してください。
 
+**Project status:** 保存済みの実験出力を整理した研究記録です。このrepositoryだけで再学習した結果ではありません。学習済みadapterと生データは同梱していません。
+
+## 評価の流れ
+
+```mermaid
+flowchart LR
+  A[Alpaca形式 42,680件] --> B[評価質問との正規化完全一致を除去: 657行]
+  B --> C[質問単位で分割: train 33,618 / validation 8,405]
+  C --> D[Gemma 3 1B IT + LoRA 2 epoch]
+  D --> E[別形式900件で回答部分のloss]
+  D --> F[同評価から50件を生成比較]
+```
+
+`results/metrics.csv` は数値の確認用、`results/before_after_generation_gemma_subset.csv` は正誤の具体例を読むための資料です。900件のloss低下を50件のROUGE/BLEUと混同しないよう、両者を分けて記録しています。
+
 ## 結果
 
 | 指標 | 学習前 | 学習後 | 対象 |
@@ -38,9 +53,12 @@ Gemma 3 1B IT に IFC/BIM の質問応答を追加学習し、重複除去後の
 
 1. Kaggle Notebook の GPU accelerator を有効にします。元の実験は NVIDIA RTX PRO 6000 で実施しました。
 2. 利用条件を確認して、[Gemma 3 1B IT](https://huggingface.co/google/gemma-3-1b-it)、[Alpaca 学習データ](https://huggingface.co/datasets/Dietmar2020/ifc-bim-high-quality-alpaca)、[Gemma 評価データ](https://huggingface.co/datasets/Dietmar2020/ifc-bim-gemma3-subset-1k) を Hugging Face Datasets の保存形式で `/kaggle/input` 以下に配置します。スクリプトはディレクトリ名に含まれる識別子で探索します。
-3. `notebooks/retrain_gemma3_lora.py` を Kaggle で実行します。依存する Python パッケージはスクリプトの import を参照してください。現状のコードは元の Kaggle 環境に合わせた実験用で、一般的なワンコマンド実行を保証していません。
+3. Python環境に `numpy`, `torch`, `pandas`, `matplotlib`, `datasets`, `transformers`, `peft` を用意します。`wandb` は任意です。元実験の厳密なパッケージバージョンは記録されていないため、ここでは再現可能なlockfileや互換性を保証しません。
+4. [`notebooks/retrain_gemma3_lora.py`](notebooks/retrain_gemma3_lora.py) の冒頭にある `WORK_ROOT` と `/kaggle/input` 探索、出力先、GPU精度設定を確認してから、Kaggleの使い捨て環境で実行します。スクリプトはデータセットを `load_from_disk` で読み込みます。元のKaggle環境に合わせた実験用コードで、一般的なワンコマンド実行を保証しません。
 
 この公開リポジトリの更新作業では GPU 再学習を実行していません。結果は保存済み出力のCSVと生成例に基づきます。スクリプトは `/kaggle/working` 内の同名ディレクトリを作り直すので、使い捨ての実行環境で実行してください。
+
+**権利の確認:** 評価CSVには第三者データ由来の質問・参照回答を含みます。出典と表示ライセンスは上記の通りですが、公開済みCSVへの再配布適合性は所有者による確認が必要です。ベースモデルの利用条件も別途確認してください。このrepository自体のライセンスも未設定です。
 
 ## 実験設定
 
